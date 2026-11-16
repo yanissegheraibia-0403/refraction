@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le liquide du tour de magie</title>
+<meta name="description" content="TP virtuel de Seconde : mesurer des angles de réfraction, tracer sin i1 en fonction de sin i2 et identifier un liquide par son indice de réfraction.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap">
+<style>
+/* Mise en page : en-tête de fiche, banc d'optique (disque + loupe), tableau de mesures, traceur. Mêmes jetons que la page d'accueil. */
+:root{
+  --paper:#f7f7f5; --surface:#ffffff; --ink:#111417; --muted:#5d636b; --line:#d9dbde;
+  --accent:#1c6db5; --accent-ink:#ffffff; --accent-soft:#e6f0f9;
+  --disc:#ffffff; --tick:#3a3f45; --glass:rgba(120,170,215,.28); --glass-edge:#6d8fb0;
+  --laser:#e0242b; --laser-soft:rgba(224,36,43,.45); --normal:#7b8189; --ok:#1d7a45;
+  --f-body:"Open Sans","Segoe UI",Arial,sans-serif; --f-mono:"Courier New",Courier,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --paper:#111418; --surface:#1a1e24; --ink:#e8eaed; --muted:#a2a8b0; --line:#2e343c;
+  --accent:#6cb2ef; --accent-ink:#0b1420; --accent-soft:#18293a;
+  --disc:#1f242b; --tick:#c9ced4; --glass:rgba(120,170,215,.22); --glass-edge:#86a9cb;
+  --laser:#ff4a50; --laser-soft:rgba(255,74,80,.5); --normal:#8d939b; --ok:#57c38a;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#111418; --surface:#1a1e24; --ink:#e8eaed; --muted:#a2a8b0; --line:#2e343c;
+  --accent:#6cb2ef; --accent-ink:#0b1420; --accent-soft:#18293a;
+  --disc:#1f242b; --tick:#c9ced4; --glass:rgba(120,170,215,.22); --glass-edge:#86a9cb;
+  --laser:#ff4a50; --laser-soft:rgba(255,74,80,.5); --normal:#8d939b; --ok:#57c38a;
+}
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 56px}
+.wrap{max-width:980px;margin:0 auto}
+.fiche{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 16px;font-family:var(--f-mono);font-size:.82rem;color:var(--muted);padding-block:22px 10px;border-bottom:1px solid var(--line)}
+.fiche a{color:inherit}
+header.top{padding-block:28px 4px;display:grid;gap:10px}
+.theme-label{font-family:var(--f-mono);font-weight:700;font-size:.95rem;margin:0}
+h1{font-size:clamp(1.8rem,5vw,2.5rem);font-weight:700;line-height:1.15;margin:0;text-wrap:balance;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:6px}
+h2{font-size:1.25rem;margin:0 0 6px;text-decoration:underline;text-underline-offset:4px}
+.lead{margin:0;max-width:66ch;color:var(--muted)}
+.code-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:8px;padding:14px 16px;border-radius:8px;background:var(--accent-soft)}
+.code{font-family:var(--f-mono);font-weight:700;font-size:1.35rem;letter-spacing:.04em}
+.code-bar details{font-size:.9rem}
+.code-bar summary{cursor:pointer;color:var(--muted)}
+.code-bar form{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+section.card{margin-top:28px;padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.steps{margin:6px 0 0;padding-left:1.2em;color:var(--muted);font-size:.95rem}
+.steps b{color:var(--ink)}
+.bench{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;margin-top:14px;align-items:start}
+@media (max-width:760px){.bench{grid-template-columns:1fr}}
+svg{display:block;width:100%;height:auto}
+.disc-svg{max-width:560px;margin:0 auto;touch-action:manipulation}
+.controls{display:grid;gap:14px}
+.i1-read{font-family:var(--f-mono);font-size:1.1rem}
+.i1-read output{font-weight:700;font-size:1.5rem}
+.slider-row{display:flex;align-items:center;gap:8px}
+input[type=range]{flex:1;accent-color:var(--accent);min-width:0;height:32px}
+button,.btn{font:inherit;font-weight:600;font-size:.95rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;padding:7px 12px;cursor:pointer;min-height:40px}
+button:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible,.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button.primary,.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);text-decoration:none;display:inline-flex;align-items:center}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.loupe{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--disc)}
+.loupe-cap{font-size:.85rem;color:var(--muted);margin:6px 0 0}
+label.chk{display:flex;gap:8px;align-items:center;font-size:.95rem}
+.data{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:24px;margin-top:14px;align-items:start}
+@media (max-width:760px){.data{grid-template-columns:1fr}}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{border:1px solid var(--line);padding:4px 6px;text-align:center}
+th{background:var(--accent-soft);font-weight:700}
+td input{width:100%;max-width:90px;font:inherit;text-align:center;padding:5px 4px;border:1px solid var(--line);border-radius:4px;background:var(--paper);color:var(--ink)}
+td.i1{font-weight:700;font-family:var(--f-mono)}
+.result{margin-top:10px;font-size:1rem}
+.result b{font-family:var(--f-mono);font-size:1.15rem}
+.hint{font-size:.88rem;color:var(--muted);margin:8px 0 0}
+.axis{stroke:var(--tick);stroke-width:1}
+.grid{stroke:var(--line);stroke-width:1}
+.axis-txt{fill:var(--muted);font:12px var(--f-body)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);font-size:.82rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="fiche"><span>Physique-Chimie</span><span>Lycée Nadar</span><span>Mr Gheraibia&nbsp;&nbsp;2026/2027</span></div>
+
+  <header class="top">
+    <p class="theme-label">Seconde · Thème : Ondes et signaux</p>
+    <h1>Le liquide du tour de magie</h1>
+    <p class="lead">Un magicien veut faire disparaître une baguette en verre dans un liquide. Il a reçu un liquide X sans étiquette. Envoie un faisceau laser dans la cuve, mesure les angles, retrouve l'indice de réfraction du liquide, puis dis s'il convient. Réponds aux questions dans ton compte rendu.</p>
+    <div class="code-bar">
+      <div>Ton code échantillon : <span class="code" id="code">R-??</span></div>
+      <a class="btn primary" href="compte-rendu-TP-refraction.docx" download>Télécharger le compte rendu (Word)</a>
+      <details>
+        <summary>J'ai déjà un code (autre appareil)</summary>
+        <form id="codeForm">
+          <label for="codeIn" class="sr">Code</label>
+          <input id="codeIn" placeholder="R-37" maxlength="5" style="font:inherit;width:6.5em;padding:6px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink)">
+          <button type="submit">Utiliser ce code</button>
+        </form>
+      </details>
+    </div>
+  </header>
+
+  <section class="card" aria-labelledby="h-banc">
+    <h2 id="h-banc">Le banc d'optique (questions 1 à 5)</h2>
+    <ol class="steps">
+      <li><b>Recopie ton code</b> en haut du compte rendu : ton liquide X en dépend.</li>
+      <li><b>Règle i₁</b> avec le curseur ou les boutons −1 / +1.</li>
+      <li><b>Lis i₂ et r</b> sur le disque gradué, au degré près, avec la loupe. Les angles se lisent par rapport à la normale (graduation 0).</li>
+    </ol>
+    <div class="bench">
+      <svg class="disc-svg" id="disc" viewBox="0 0 600 600" role="img" aria-label="Disque gradué avec la cuve de liquide et le faisceau laser">
+        <g id="scene"></g>
+      </svg>
+      <div class="controls">
+        <div>
+          <div class="i1-read">i₁ = <output id="i1out">30</output>°</div>
+          <div class="slider-row">
+            <button type="button" id="minus" aria-label="Diminuer i1 de 1 degré">−1</button>
+            <input type="range" id="i1" min="0" max="89" step="1" value="30" aria-label="Angle d'incidence i1 en degrés">
+            <button type="button" id="plus" aria-label="Augmenter i1 de 1 degré">+1</button>
+          </div>
+        </div>
+        <label class="chk"><input type="checkbox" id="showNormal" checked> Afficher la normale</label>
+        <div>
+          <div style="font-size:.95rem;margin-bottom:6px">Loupe sur :</div>
+          <div class="seg" role="group" aria-label="Choix de la loupe">
+            <button type="button" data-loupe="refr" aria-pressed="true">rayon réfracté</button>
+            <button type="button" data-loupe="refl" aria-pressed="false">rayon réfléchi</button>
+          </div>
+        </div>
+        <div>
+          <div class="loupe"><svg id="loupe" viewBox="0 0 70 70" role="img" aria-label="Vue agrandie de la graduation"><use href="#scene"/></svg></div>
+          <p class="loupe-cap">Graduations : petits traits tous les 1°, moyens tous les 5°, longs tous les 10°.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="h-data">
+    <h2 id="h-data">Mes mesures et le traceur (questions 5 à 10)</h2>
+    <p class="hint" style="margin-top:0">Recopie tes mesures ici aussi : le traceur dessine sin i₁ en fonction de sin i₂ et calcule le coefficient directeur de la droite qui passe par l'origine. Les sinus, toi, tu les calcules dans le compte rendu (question 8).</p>
+    <div class="data">
+      <div>
+        <table>
+          <thead><tr><th scope="col">i₁ (°)</th><th scope="col">i₂ (°)</th><th scope="col">r (°)</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button type="button" id="clear">Effacer mes mesures</button>
+        </div>
+      </div>
+      <div>
+        <svg id="plot" viewBox="0 0 360 330" role="img" aria-label="Graphique sin i1 en fonction de sin i2"></svg>
+        <div class="result" id="result">Entre au moins 3 valeurs de i₂ pour voir la droite.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>Ce que tu écris ici reste dans ton navigateur : rien n'est envoyé à ton professeur. Ton compte rendu Word, lui, est à déposer dans le dossier partagé de la classe (NOM_Prenom_TP_refraction.docx). · <a href="https://yanissegheraibia-0403.github.io/" style="color:inherit">Tous les TP</a></footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  // Matériau choisi par le reste de n / 4 (n = nombre du code R-n). Même table que le corrigé.
+  var MAT = [1.34, 1.38, 1.47, 1.52]; // eau salée classique (eau de mer), eau de la mer Morte, glycérine, huile d'immersion
+  var ANGLES = [0,10,20,30,40,50,60,70];
+  var CX = 300, CY = 300, R = 250, RHALF = 195;
+  var NS = "http://www.w3.org/2000/svg";
+
+  function store(k, v){ try{ if(v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); }catch(e){ return null; } }
+
+  // ---------- code échantillon ----------
+  var codeN = parseInt(store("refraction-code") || "", 10);
+  if(!(codeN >= 10 && codeN <= 99)){ codeN = 10 + Math.floor(Math.random()*90); store("refraction-code", String(codeN)); }
+  var n2 = MAT[codeN % 4];
+  document.getElementById("code").textContent = "R-" + codeN;
+  document.getElementById("codeForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var m = /(\d{2})/.exec(document.getElementById("codeIn").value);
+    if(!m) return;
+    var v = parseInt(m[1],10); if(v < 10) return;
+    codeN = v; n2 = MAT[codeN % 4]; store("refraction-code", String(codeN));
+    document.getElementById("code").textContent = "R-" + codeN;
+    loadData(); draw(); plot();
+  });
+
+  // ---------- disque ----------
+  function el(name, attrs, parent){
+    var e = document.createElementNS(NS, name);
+    for(var k in attrs) e.setAttribute(k, attrs[k]);
+    if(parent) parent.appendChild(e);
+    return e;
+  }
+  var scene = document.getElementById("scene");
+  // angle phi en degrés compté depuis la normale du haut, dans le sens horaire
+  function pt(phi, r){ var a = phi*Math.PI/180; return [CX + r*Math.sin(a), CY - r*Math.cos(a)]; }
+
+  el("circle", {cx:CX, cy:CY, r:R+28, fill:"var(--disc)", stroke:"var(--line)", "stroke-width":2}, scene);
+  // cuve hémicylindrique remplie du liquide X (moitié basse)
+  el("path", {d:"M"+(CX-RHALF)+" "+CY+" A"+RHALF+" "+RHALF+" 0 0 0 "+(CX+RHALF)+" "+CY+" Z",
+    fill:"var(--glass)", stroke:"var(--glass-edge)", "stroke-width":2}, scene);
+  el("text", {x:CX-RHALF*0.55, y:CY+RHALF*0.42, "font-size":34, "font-weight":700, fill:"var(--glass-edge)", "text-anchor":"middle", "font-family":"Open Sans, sans-serif"}, scene).textContent = "X";
+  el("text", {x:CX-R+6, y:CY-10, "font-size":15, fill:"var(--muted)", "font-family":"Open Sans, sans-serif"}, scene).textContent = "air";
+  // graduations
+  var ticks = el("g", {stroke:"var(--tick)"}, scene);
+  for(var d = 0; d < 360; d++){
+    var len = d % 10 === 0 ? 18 : (d % 5 === 0 ? 11 : 6);
+    var p1 = pt(d, R), p2 = pt(d, R - len);
+    el("line", {x1:p1[0], y1:p1[1], x2:p2[0], y2:p2[1], "stroke-width": d%10===0 ? 1.4 : 0.8, "vector-effect":"non-scaling-stroke"}, ticks);
+    if(d % 10 === 0){
+      var lab = d <= 90 ? d : d <= 180 ? 180 - d : d <= 270 ? d - 180 : 360 - d;
+      var pl = pt(d, R + 15);
+      var t = el("text", {x:pl[0], y:pl[1], "font-size":12, fill:"var(--tick)", "text-anchor":"middle", "dominant-baseline":"central", "font-family":"Open Sans, sans-serif"}, scene);
+      t.textContent = lab;
+    }
+  }
+  el("circle", {cx:CX, cy:CY, r:R, fill:"none", stroke:"var(--tick)", "stroke-width":1, "vector-effect":"non-scaling-stroke"}, scene);
+  // diamètre horizontal (surface de séparation)
+  el("line", {x1:CX-R, y1:CY, x2:CX+R, y2:CY, stroke:"var(--tick)", "stroke-width":1, "vector-effect":"non-scaling-stroke"}, scene);
+  var normal = el("line", {x1:CX, y1:CY-R, x2:CX, y2:CY+R, stroke:"var(--normal)", "stroke-width":1.2, "stroke-dasharray":"8 6", "vector-effect":"non-scaling-stroke"}, scene);
+  // laser (boîtier) + rayons
+  var laserBox = el("rect", {width:44, height:18, rx:3, fill:"#2b2f35", stroke:"#000", "stroke-width":1}, scene);
+  var rays = el("g", {"stroke-linecap":"round"}, scene);
+  var rInc = el("line", {stroke:"var(--laser)", "stroke-width":2.6, "vector-effect":"non-scaling-stroke"}, rays);
+  var rRefl = el("line", {stroke:"var(--laser-soft)", "stroke-width":2, "vector-effect":"non-scaling-stroke"}, rays);
+  var rRefr = el("line", {stroke:"var(--laser)", "stroke-width":2.6, "vector-effect":"non-scaling-stroke"}, rays);
+  el("circle", {cx:CX, cy:CY, r:3, fill:"var(--ink)"}, scene);
+  el("text", {x:CX+8, y:CY-8, "font-size":14, fill:"var(--ink)", "font-family":"Open Sans, sans-serif"}, scene).textContent = "O";
+
+  var i1In = document.getElementById("i1"), i1Out = document.getElementById("i1out");
+  var loupeMode = "refr", geo = {};
+  function draw(){
+    var i1 = +i1In.value;
+    var i2 = Math.asin(Math.sin(i1*Math.PI/180)/n2)*180/Math.PI;
+    i1Out.textContent = i1;
+    var pin = pt(-i1, R - 20), pref = pt(i1, R), prr = pt(180 - i2, R);
+    rInc.setAttribute("x1", pin[0]); rInc.setAttribute("y1", pin[1]); rInc.setAttribute("x2", CX); rInc.setAttribute("y2", CY);
+    rRefl.setAttribute("x1", CX); rRefl.setAttribute("y1", CY); rRefl.setAttribute("x2", pref[0]); rRefl.setAttribute("y2", pref[1]);
+    rRefr.setAttribute("x1", CX); rRefr.setAttribute("y1", CY); rRefr.setAttribute("x2", prr[0]); rRefr.setAttribute("y2", prr[1]);
+    var pb = pt(-i1, R - 4);
+    laserBox.setAttribute("x", pb[0] - 22); laserBox.setAttribute("y", pb[1] - 9);
+    laserBox.setAttribute("transform", "rotate(" + (90 - i1) + " " + pb[0] + " " + pb[1] + ")");
+    geo = {refr: pt(180 - i2, R - 8), refl: pt(i1, R - 8)};
+    var c = geo[loupeMode];
+    document.getElementById("loupe").setAttribute("viewBox", (c[0]-35) + " " + (c[1]-35) + " 70 70");
+  }
+  i1In.addEventListener("input", draw);
+  document.getElementById("minus").addEventListener("click", function(){ i1In.value = Math.max(0, +i1In.value - 1); draw(); });
+  document.getElementById("plus").addEventListener("click", function(){ i1In.value = Math.min(89, +i1In.value + 1); draw(); });
+  document.getElementById("showNormal").addEventListener("change", function(e){ normal.style.display = e.target.checked ? "" : "none"; });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-loupe]"), function(b){
+    b.addEventListener("click", function(){
+      loupeMode = b.getAttribute("data-loupe");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-loupe]"), function(x){ x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      draw();
+    });
+  });
+
+  // ---------- tableau ----------
+  var tbody = document.getElementById("tbody"), inputs = {};
+  ANGLES.forEach(function(a){
+    var tr = document.createElement("tr");
+    tr.innerHTML = '<td class="i1">' + a + '</td><td><input inputmode="decimal" aria-label="i2 pour i1 = ' + a + '°" data-k="i2" data-a="' + a + '"></td>' +
+                   '<td><input inputmode="decimal" aria-label="r pour i1 = ' + a + '°" data-k="r" data-a="' + a + '"></td>';
+    tbody.appendChild(tr);
+  });
+  Array.prototype.forEach.call(tbody.querySelectorAll("input"), function(inp){
+    inputs[inp.dataset.k + inp.dataset.a] = inp;
+    inp.addEventListener("input", function(){ saveData(); plot(); });
+  });
+  function key(){ return "refraction-mesures-" + codeN; }
+  function saveData(){ var o = {}; for(var k in inputs) o[k] = inputs[k].value; store(key(), JSON.stringify(o)); }
+  function loadData(){
+    var o = {}; try{ o = JSON.parse(store(key()) || "{}") || {}; }catch(e){}
+    for(var k in inputs) inputs[k].value = o[k] || "";
+  }
+  document.getElementById("clear").addEventListener("click", function(){ for(var k in inputs) inputs[k].value = ""; saveData(); plot(); });
+
+  // ---------- traceur ----------
+  var svgP = document.getElementById("plot");
+  var PX0 = 48, PY0 = 290, PW = 290, PH = 270; // axe x : sin i2 de 0 à 1 ; axe y : sin i1 de 0 à 1
+  function X(v){ return PX0 + v*PW; } function Y(v){ return PY0 - v*PH; }
+  function num(s){ var v = parseFloat(String(s).replace(",", ".")); return isFinite(v) ? v : null; }
+  function plot(){
+    svgP.innerHTML = "";
+    for(var g = 0; g <= 10; g++){
+      var v = g/10;
+      el("line", {x1:X(v), y1:Y(0), x2:X(v), y2:Y(1), "class":"grid"}, svgP);
+      el("line", {x1:X(0), y1:Y(v), x2:X(1), y2:Y(v), "class":"grid"}, svgP);
+      if(g % 2 === 0){
+        el("text", {x:X(v), y:PY0+16, "text-anchor":"middle", "class":"axis-txt"}, svgP).textContent = String(v).replace(".", ",");
+        el("text", {x:PX0-6, y:Y(v)+4, "text-anchor":"end", "class":"axis-txt"}, svgP).textContent = String(v).replace(".", ",");
+      }
+    }
+    el("line", {x1:X(0), y1:Y(0), x2:X(1), y2:Y(0), "class":"axis"}, svgP);
+    el("line", {x1:X(0), y1:Y(0), x2:X(0), y2:Y(1), "class":"axis"}, svgP);
+    el("text", {x:X(1), y:PY0+32, "text-anchor":"end", "class":"axis-txt", "font-weight":"700"}, svgP).textContent = "sin i₂";
+    el("text", {x:PX0, y:12, "text-anchor":"start", "class":"axis-txt", "font-weight":"700"}, svgP).textContent = "sin i₁";
+    var pts = [];
+    ANGLES.forEach(function(a){
+      var v = num(inputs["i2" + a].value);
+      if(v === null || v < 0 || v >= 90) return;
+      pts.push([Math.sin(v*Math.PI/180), Math.sin(a*Math.PI/180)]);
+    });
+    var res = document.getElementById("result");
+    var sxy = 0, sxx = 0;
+    pts.forEach(function(p){ sxy += p[0]*p[1]; sxx += p[0]*p[0]; });
+    if(pts.length >= 3 && sxx > 0){
+      var k = sxy/sxx, xe = Math.min(1, 1/k);
+      el("line", {x1:X(0), y1:Y(0), x2:X(xe), y2:Y(k*xe), stroke:"var(--accent)", "stroke-width":2}, svgP);
+      res.innerHTML = "Droite passant par l'origine : sin i₁ = k × sin i₂ avec <b>k ≈ " + k.toFixed(2).replace(".", ",") + "</b>";
+    }else{
+      res.textContent = "Entre au moins 3 valeurs de i₂ pour voir la droite.";
+    }
+    pts.forEach(function(p){ el("circle", {cx:X(p[0]), cy:Y(p[1]), r:4.5, fill:"var(--laser)", stroke:"var(--surface)", "stroke-width":1.5}, svgP); });
+  }
+
+  loadData(); draw(); plot();
+})();
+</script>
+</body>
+</html>
